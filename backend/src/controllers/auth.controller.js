@@ -2,6 +2,10 @@ import express from "express"
 import User from "../models/User.js"
 import bcrypt from "bcryptjs"
 import { generateToken } from "../lib/utils.js"
+import dotenv from "dotenv"
+import { sendWelcomeEmail } from "../emails/emailHandlers.js"
+
+dotenv.config();
 
 export const login = (req, res) => {
     res.send('Login route');
@@ -39,8 +43,8 @@ export const signup = async (req, res) => {
         });
 
         if(newUser) {
-            await newUser.save();
-			generateToken(newUser._id, res);
+            const savedUser = await newUser.save();
+			generateToken(savedUser._id, res);
             
             res.status(201).json({
 				_id: newUser._id,
@@ -48,6 +52,12 @@ export const signup = async (req, res) => {
 				email: newUser.email,
 				profilePic: newUser.profilePic,
 			}); //200 means success and 201 means something is created successfully
+			
+			try {
+				await sendWelcomeEmail(savedUser.email, savedUser.fullName, process.env.CLIENT_URL);
+			}catch(error) {
+				console.log('Failed to send welcome email: ', error);
+			}
         }else {
             res.status(400).json({message: 'Invalid user data'});
         }
