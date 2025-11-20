@@ -1,6 +1,7 @@
 import Message from "../models/Message.js";
 import User from "../models/User.js";
 import cloudinary from "../lib/cloudinary.js";
+import { sender } from "../lib/resend.js";
 
 export const getAllContacts = async (req, res) => {
     try {
@@ -37,6 +38,14 @@ export const sendMessage = async (req, res) => {
         const { text, image } = req.body;
         const { id: receiverId } = req.params;
         const senderId = req.user._id;
+
+        if(!text && !image) {
+            return res.status(400).json({ message: 'Message text or image is required' });
+        }
+
+        if(senderId.equals(receiverId)) {
+            return res.status(400).json({ message: 'You cannot send message to yourself' });
+        }
 
         let imageUrl;
         if(image) {
@@ -82,7 +91,7 @@ export const getChatPartners = async (req, res) => {
         }).select('-password');
 
         res.status(200).json(chatPartners);
-        
+
     } catch (error) {
         console.log('Error in getChatPartners:', error);
         res.status(500).json({ message: 'Internal Server Error' });
