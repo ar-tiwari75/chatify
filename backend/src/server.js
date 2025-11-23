@@ -11,7 +11,10 @@ const app = express();
 const PORT = ENV.PORT || 3000;
 
 app.use(express.json()); // Middleware to parse JSON bodies -> req.body
-app.use(cors)
+app.use(cors({
+    origin: ENV.CLIENT_URL,
+    credentials: true
+}))
 app.use(cookieParser()); // Middleware to parse cookies -> req.cookies
 
 app.get('/', (req, res) => {
