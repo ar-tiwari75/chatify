@@ -4,13 +4,14 @@ import authRoutes from "./routes/auth.route.js"
 import messageRoutes from "./routes/message.route.js"
 import { ENV } from "./lib/env.js";
 import cookieParser from "cookie-parser";
-
+import cors from "cors";
 
 const app = express();
 
 const PORT = ENV.PORT || 3000;
 
 app.use(express.json()); // Middleware to parse JSON bodies -> req.body
+app.use(cors)
 app.use(cookieParser()); // Middleware to parse cookies -> req.cookies
 
 app.get('/', (req, res) => {
@@ -19,6 +20,15 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
+
+// make ready for deployment
+if (ENV.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+  app.get("*", (_, res) => {
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+  });
+}
 
 app.listen(PORT, () => {
     console.log('Server is running on port ' + PORT);
