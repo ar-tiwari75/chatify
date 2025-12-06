@@ -72,7 +72,6 @@ function ChatContainer() {
           <NoChatHistoryPlaceholder name={selectedUser.fullName} />
         )}
       </div>
-
       <MessageInput />
     </>
   );
